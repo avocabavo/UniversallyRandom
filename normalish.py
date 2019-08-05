@@ -7,29 +7,34 @@ dpi= 25
 stdevs= 4
 fin= 2 * dpi * stdevs + 1
 
-if __name__=='__main__':
-  xs= []
-  for i in range(fin):
-    xs.append(i/dpi-stdevs)
+xs= []
+for i in range(fin):
+  xs.append(i/dpi-stdevs)
 
+def analyze(targets):
   datasets= {}
-  for best_of in [1, 2]:
-    ds= [best_of * stats.norm.cdf(x) ** (best_of - 1) * stats.norm.pdf(x) for x in xs]
+  for best_of in targets:
+    ds= {'data': [best_of * stats.norm.cdf(x) ** (best_of - 1) * stats.norm.pdf(x) for x in xs]}
     datasets[best_of]= ds
     print('analyzing what happens when you take the best of {} random normal shots'.format(best_of))
-    mean= sum([xs[i]*ds[i] for i in range(fin)]) / dpi
-    print('mean: ' + str(mean))
-    variance= sum([(xs[i] - mean)**2 * ds[i] for i in range(fin)]) / dpi
-    stdev= variance ** 0.5
-    print('stdev: ' + str(stdev))
-    skewness= sum([((xs[i] - mean) / stdev) ** 3 * ds[i] for i in range(fin)]) / dpi
-    print('skewness: ' + str(skewness))
-    kurtosis= sum([((xs[i] - mean) / stdev) ** 4 * ds[i] for i in range(fin)]) / dpi
-    print('kurtosis: ' + str(kurtosis))
+    ds['mean']= sum([xs[i]*ds['data'][i] for i in range(fin)]) / dpi
+    print('mean: ' + str(ds['mean']))
+    ds['variance']= sum([(xs[i] - ds['mean'])**2 * ds['data'][i] for i in range(fin)]) / dpi
+    ds['stdev']= ds['variance'] ** 0.5
+    print('stdev: ' + str(ds['stdev']))
+    ds['skewness']= sum([((xs[i] - ds['mean']) / ds['stdev']) ** 3 * ds['data'][i] for i in range(fin)]) / dpi
+    print('skewness: ' + str(ds['skewness']))
+    ds['kurtosis']= sum([((xs[i] - ds['mean']) / ds['stdev']) ** 4 * ds['data'][i] for i in range(fin)]) / dpi
+    print('kurtosis: ' + str(ds['kurtosis']))
+  return datasets
 
+if __name__=='__main__':
+  targets= list(range(1, 11))
+  datasets= analyze(targets)
 
-
-  p= plt.subplot()
-  for key in datasets.keys():
-    p.plot(xs, datasets[key])
+  fig, plots= plt.subplots(1, 2)
+  for best_of in targets:
+    plots[0].plot(xs, datasets[best_of]['data'])
+  plots[1].plot(targets, [datasets[best_of]['mean'] for best_of in targets])
+  plots[1].plot(targets, [math.log(best_of)/math.log(3) for best_of in targets])
   plt.show()
