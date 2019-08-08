@@ -38,3 +38,11 @@ if __name__=='__main__':
   plots[1].plot(targets, [datasets[best_of]['mean'] for best_of in targets])
   plots[1].plot(targets, [math.log(best_of)/math.log(3) for best_of in targets])
   plt.show()
+
+
+# p= normalish.plt.subplot()
+# p.plot(targets, [math.exp(datasets[bo]['mean'])**2 for bo in targets])
+# normalish.plt.show()
+
+
+# p.plot(targets, [datasets[bo]['mean'] for bo in targets])
